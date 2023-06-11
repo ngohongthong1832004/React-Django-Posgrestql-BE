@@ -1,0 +1,38 @@
+<!-- simple form -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style
+    type="text/css">
+    label {
+        display: block;
+    }
+    .input {
+        margin-bottom: 10px;
+        padding: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 1rem;
+        
+    }
+    .btn-submit {
+        padding: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 1rem;
+        background-color: #ccc;
+        width: 100%;
+    }
+
+</style>
+<body>
+    <!-- simple form -->
+    <form method="post" action="{% url 'form' %}">
+        {% csrf_token %}
+        {{ form }}
+        <button class="btn-submit" type="submit">Submit</button>
+      </form>
+</body>
+</html>
