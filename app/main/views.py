@@ -2,7 +2,7 @@ from typing import Any, Dict
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views import View
-from .models import Film
+from .models import Film, UserSub, Movies
 from django.views.generic import TemplateView, ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -18,6 +18,7 @@ from rest_framework import filters
 from rest_framework import permissions
 from rest_framework.permissions import DjangoModelPermissionsOrAnonReadOnly
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.pagination import PageNumberPagination
 
 
 from rest_framework.views import APIView
@@ -32,7 +33,7 @@ from .forms import MyForm
 
 from .forms import *
 
-class LoginView( FormView) :
+class LoginView(FormView) :
     template_name = "login.html"
     form_class = LoginForm
 
@@ -55,9 +56,22 @@ class LoginView( FormView) :
 
 
 
+from rest_framework.permissions import IsAdminUser
+from rest_framework import authentication
 
 class LoginAPIView(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    # permission_classes = [IsAuthenticatedOrReadOnly]
+    # authentication_classes = [authentication.TokenAuthentication]
+    # permission_classes = [ IsAdminUser ]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+
+    # redirect_authenticated_user = True
+    # authentication_form = LoginForm
+    
+    # def get(self, reequest):
+
+    #     return Response({'message': 'helo thang ngu'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
     def post(self, request):
@@ -67,12 +81,15 @@ class LoginAPIView(APIView):
         # Authenticate user
         user = authenticate(username=username, password=password)
 
+        print("+==================================================================")
         if user is not None:
             # User credentials are valid
             token, _ = Token.objects.get_or_create(user=user)
+            print("+==================================SUCCESS=====================================")
             return Response({'token': token.key}, status=status.HTTP_200_OK)
         else:
             # User credentials are invalid
+            print("+==================================FAIL=====================================")
             return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -81,12 +98,15 @@ class LoginAPIView(APIView):
 
 
 
-
+    
 
 class FilmApiView(APIView):
     # Uncomment the line below to apply the desired permission class or classes
     # permission_classes = [permissions.IsAuthenticated]
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+   
+
 
     def get(self, request, *args, **kwargs):
         films = Film.objects.all()
@@ -96,7 +116,38 @@ class FilmApiView(APIView):
         serializer = FilmSerializer(film, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class CustomPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
+class FilmApiAll(APIView):
+
+    pagination_class = CustomPagination
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    # page 10
+    # http:// 
+    # ?page=10
+    # &page_size=10
+
+    def get(self, request, *args, **kwargs):
+        paginator = self.pagination_class()
+        films = Movies.objects.all()
+        paginated_items = paginator.paginate_queryset(films, request)
+        serializer = FilmSerializer(paginated_items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+class FilmAddView(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    def post(self, request):
+        serializer = FilmSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -105,12 +156,17 @@ class FilmApiView(APIView):
 def home(request):
     return HttpResponse("Hello world! my friends")
 
+from datetime import date
+
+
 
 def default(request):
+    current_date = date.today()
     test = {
-        "name": "test",
-        "age": 20,
-        "children": "[{name: 'test1', age: 10}, {name: 'test2', age: 20}]"
+        "name": "Pine",
+        "age": current_date.year - 2004,
+        "HELLO" : "Welcome to my world",
+        "♠○☺☻♥" : "I LOVE YOU",
     }
 
     return JsonResponse(test, safe=False)
@@ -168,6 +224,8 @@ class FilmListView(LoginRequiredMixin, ListView):
 
 class FilmDetailView(DetailView):
     model = Film
+    # model2 = UserSub
+
     template_name = 'detail.html'
     # context_object_name = 'film'
     # def get(self, *args, **kwargs):
@@ -186,6 +244,7 @@ class FilmDetailView(DetailView):
         context['film'] = Film.objects.get(id=self.kwargs['pk'])
         context['testContext'] = Film.objects.get(id=self.kwargs['pk'])
         context["year"] = Film.objects.get(id=self.kwargs['pk']).year
+        context["userSub"] = UserSub.objects.get(id=3).name
         return context
 
 
@@ -214,3 +273,60 @@ class MyFormView(FormView):
 
 
     
+# =======================================================================
+
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
+
+class CustomAuthToken(ObtainAuthToken):
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user_id': user.pk,
+            'email': user.email
+        })
+
+
+class ExampleView(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        content = {
+            'user': str(request.user),  # `django.contrib.auth.User` instance.
+            'auth': str(request.auth),  # None
+        }
+        return Response(content)
+
+
+
+from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
+
+
+
+
+
+
+
+
+
+

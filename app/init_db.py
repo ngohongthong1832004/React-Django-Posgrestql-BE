@@ -29,9 +29,33 @@ with open('./main/model/movie-full-option.json', 'r', encoding="utf-8") as f:
         temp.save()
         # print("done !!")
 
-from main.models import UserSub
+from main.models import Movies
+with open('./main/model/movie-full-option.json', 'r', encoding="utf-8") as f:
+    films = json.load(f)
+    index = 1
+    for film in films:
+        temp = Movies(
+            id = index,
+            name = film['name'],
+            img = film['img'],
+            year = film['year'],
+            length = film['length'],
+            imdb = film['imdb'],
+            href = film['href'],
+            desc = film['desc'],
+            genres = film['genres'],
+            casts = film['casts'],
+            countries = film['countries'],
+            production = film['production']
+        )
+        index += 1
+        temp.save()
 
-s = UserSub(id=3, name='admin7', age=18)
-s.save()
-s = UserSub(id=2, name='user', age=18)
-s.save()
+
+
+# from main.models import UserSub
+
+# s = UserSub(id=3, name='admin7', age=18)
+# s.save()
+# s = UserSub(id=2, name='user', age=18)
+# s.save()

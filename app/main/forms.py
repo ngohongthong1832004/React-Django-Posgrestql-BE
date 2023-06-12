@@ -8,4 +8,4 @@ class MyForm(forms.Form):
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'input', 'placeholder': 'Enter username'}))
-    password = forms.EmailField(widget=forms.TextInput(attrs={'class': 'input', 'placeholder': 'Enter your pass'}))
+    password = forms.CharField(widget=forms.TextInput(attrs={'class': 'input', 'placeholder': 'Enter your pass'}))
