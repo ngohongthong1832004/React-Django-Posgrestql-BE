@@ -5,9 +5,11 @@ from django.views import View
 from .models import Film, UserSub, Movies
 from django.views.generic import TemplateView, ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 ## API
-from main.serializers import FilmSerializer
+from main.serializers import *
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -250,11 +252,15 @@ class FilmDetailView(DetailView):
 
 
 
-
+# @method_decorator(csrf_exempt, name='dispatch')
+# @csrf_exempt
 class MyFormView(FormView):
     template_name = 'form.html'
     form_class = MyForm
     success_url = 'home'  # URL to redirect to after successful form submission
+
+    # def post(self, request, *args, **kwargs):
+    #     return Response({'message': 'helo thang ngu'}, status=status.HTTP_401_UNAUTHORIZED)
 
     def form_valid(self, form):
         # Process the form data
@@ -264,7 +270,6 @@ class MyFormView(FormView):
         # Perform actions with the form data (e.g., save to database)
         # ...
         print(name, email, message)
-        # Redirect to a new URL:
 
         return super().form_valid(form)
 
@@ -286,8 +291,7 @@ from rest_framework.response import Response
 class CustomAuthToken(ObtainAuthToken):
 
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
+        serializer = self.serializer_class(data=request.data,context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
@@ -323,10 +327,68 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 
 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 
 
+class UserRegistrationView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class LoginView(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user_id': user.pk,
+            'email': user.email
+        })
 
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        Token.objects.filter(user=user).delete()
+        return Response({'message': 'Logout successful'})
+    
+# @csrf_exempt
+class GetOneData(APIView):
+    permission_classes = [IsAuthenticated]
+  
+    def get(self, request, *args, **kwargs):
+        # user = request.user
+        return Response({'message': "user.username"})
+
+# way 1
+class GetAllData(APIView):
+    permission_classes = [IsAuthenticated]
+    model = Movies
+    serializer = MovieSerializer(model.objects.all(), many=True)
+    def get(self, request, *args, **kwargs):
+        paginator = CustomPagination()
+        paginated_items = paginator.paginate_queryset(self.serializer.data, request)
+        return Response(paginated_items, status=status.HTTP_200_OK)
+# way 2
+# class GetAllData(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request, *args, **kwargs):
+#         paginator = CustomPagination()
+#         paginated_items = paginator.paginate_queryset(MovieSerializer(Movies.objects.all(), many=True).data, request)
+#         return Response(paginated_items, status=status.HTTP_200_OK)

@@ -8,6 +8,33 @@
 <body>
     <h1>HOME</h1>
     <p>Home page</p>
+    <script>
+       fetch('http://127.0.0.1:8000/getall/',{
+        
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        data : {
+            'username' : 'admin',
+            'password' : '123'
+        }
+       })
+      .then(response => {
+        console.log("da vao day")
+        if (!response.ok) {
+          throw new Error('Network response was not OK');
+        }
+        return response.json();
+      })
+      .then(json => {
+        console.log(json);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+    </script>
     <ul>
         {% for i in film_list %}
             <li> {{i.id}} <=> {{ i.name }}</li>
