@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Film, UserSub, Movies
+from .models import Film, Movies
 from django.contrib.auth.models import User
 
 

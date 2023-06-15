@@ -50,12 +50,3 @@ with open('./main/model/movie-full-option.json', 'r', encoding="utf-8") as f:
         )
         index += 1
         temp.save()
-
-
-
-# from main.models import UserSub
-
-# s = UserSub(id=3, name='admin7', age=18)
-# s.save()
-# s = UserSub(id=2, name='user', age=18)
-# s.save()
