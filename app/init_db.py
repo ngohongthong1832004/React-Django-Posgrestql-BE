@@ -29,12 +29,12 @@ with open('./main/model/movie-full-option.json', 'r', encoding="utf-8") as f:
         temp.save()
         # print("done !!")
 
-from main.models import Movies
+from main.models import Movie
 with open('./main/model/movie-full-option.json', 'r', encoding="utf-8") as f:
     films = json.load(f)
     index = 1
     for film in films:
-        temp = Movies(
+        temp = Movie(
             id = index,
             name = film['name'],
             img = film['img'],

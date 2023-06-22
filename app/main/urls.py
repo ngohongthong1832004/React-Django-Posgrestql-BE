@@ -23,6 +23,11 @@ urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='user-registration'),
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
+    path("get-user-info/", GetUserInformation.as_view(), name="GetUserInfo"),
+    path("get-all-user/", GetAllUser.as_view(), name="GetAllUser"),
+
+
+
     path('getone/', GetOneData.as_view(), name="GetOneData"),
     path('getall/', GetAllData.as_view(), name="GetAllData"),
 

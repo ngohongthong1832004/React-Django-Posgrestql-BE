@@ -19,7 +19,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework import filters
 from rest_framework import permissions
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -28,7 +28,7 @@ from rest_framework.authtoken.models import Token
 
 
 
-from .models import Film, Movies
+from .models import *
 
 from datetime import date
 
@@ -38,7 +38,7 @@ from .forms import *
 
 # CUSTOM pagination
 class CustomPagination(PageNumberPagination):
-    page_size = 10
+    page_size = 9
     page_size_query_param = 'page_size'
     max_page_size = 100
 
@@ -93,7 +93,7 @@ class FilmApiAll(APIView):
 
     def get(self, request, *args, **kwargs):
         paginator = self.pagination_class()
-        films = Movies.objects.all()
+        films = Movie.objects.all()
         paginated_items = paginator.paginate_queryset(films, request)
         serializer = FilmSerializer(paginated_items, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -197,6 +197,33 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 # =====================================================================================================================================
 # =====================================================================================================================================
 
+# handle creae super user
+from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
+
+
+class Command(BaseCommand):
+    help = 'Create a superuser and perform custom actions'
+
+    def handle(self, *args, **options):
+        User = get_user_model()
+        username = input('Username: ')
+        email = input('Email: ')
+        password = input('Password: ')
+
+        # Create the superuser
+        user = User.objects.create_superuser(
+            username=username,
+            email=email,
+            password=password
+        )
+        print("================================hello===============================================")
+        # Perform your custom actions here
+        # For example, send an email notification
+
+        self.stdout.write(self.style.SUCCESS('Superuser created successfully. :)))'))
+
+
 # API RESTFULL
 
 class GetOneData(APIView):
@@ -207,8 +234,8 @@ class GetOneData(APIView):
         return Response({'message': "user.username"})
 class GetAllData(APIView):
     permission_classes = [IsAuthenticated]
-    model = Movies
-    serializer = MovieSerializer(model.objects.all(), many=True)
+    model = Movie
+    serializer = Movieerializer(model.objects.all(), many=True)
     def get(self, request, *args, **kwargs):
         paginator = CustomPagination()
         paginated_items = paginator.paginate_queryset(self.serializer.data, request)
@@ -236,10 +263,58 @@ class LoginView(ObtainAuthToken):
         print(user)
         return Response({
             'token': token.key,
-            'user_id': user.pk,
+            'user_id': user.id,
             'email': user.email,
-            'isStaff' : user.is_staff
+            'isStaff' : user.is_staff,
+            'firstName' : user.first_name,
+            'lastName' : user.last_name,
+            "isSuperuser" : user.is_superuser,
         })
+
+class GetUserInformation(APIView):
+    permission_classes = [IsAuthenticated]
+    model = InfoUser
+    # serializers = InfoUserSerializer(model.objects.all(), many=True)
+    def get(self, request):
+        user = request.user
+        info_user = InfoUser.objects.get(user=user)
+        serializer = InfoUserSerializer(info_user)
+        return Response({
+            'email': user.email,
+            "isSuperuser" : user.is_superuser,
+            'isStaff' : user.is_staff,
+            "infoUser": serializer.data,
+            "fullname": user.first_name + " " + user.last_name,
+        })
+
+class UpdateUserInformation(APIView):
+    permission_classes = [IsAuthenticated]
+    model = User
+    def post(self, request):
+        user = request.user
+        info_user = InfoUser.objects.get(user=user)
+        serializer = InfoUserSerializer(info_user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "firstname": user.first_name,
+                "lastname": user.last_name,
+                "fullname": user.first_name + " " + user.last_name,
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class GetAllUser(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response({'users': serializer.data})
+
+    # def get(self, request):
+    #     paginator = CustomPagination()
+    #     paginated_items = paginator.paginate_queryset(self.serializers.data, request)
+    #     return Response(, status=status.HTTP_200_OK)
 
 
 class LogoutView(APIView):

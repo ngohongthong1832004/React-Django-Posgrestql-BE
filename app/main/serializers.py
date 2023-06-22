@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import Film, Movies
+from .models import *
 from django.contrib.auth.models import User
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -8,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'password', 'email', 'first_name', 'last_name']
+        fields = ['username', 'password', 'email', 'first_name', 'last_name', "is_staff", "is_superuser"]
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -18,8 +19,15 @@ class UserSerializer(serializers.ModelSerializer):
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', '')
         )
+
+        InfoUser.objects.create(user=user, id=user.id)
+
         return user
 
+class InfoUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InfoUser
+        fields = ('__all__')
 
 
 class FilmSerializer(serializers.ModelSerializer):
@@ -41,9 +49,9 @@ class FilmSerializer(serializers.ModelSerializer):
         )
 
 
-class MovieSerializer(serializers.ModelSerializer):
+class Movieerializer(serializers.ModelSerializer):
     class Meta:
-        model = Movies
+        model = Movie
         fields = ("__all__") 
 
 

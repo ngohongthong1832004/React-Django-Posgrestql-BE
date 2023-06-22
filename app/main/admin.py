@@ -2,5 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Movies
-admin.site.register(Movies)
+from .models import *
+
+admin.site.register(InfoUser)
+admin.site.register(Movie)

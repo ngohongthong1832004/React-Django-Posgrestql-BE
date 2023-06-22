@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import User
+
 
 
 class Film(models.Model):
@@ -15,9 +17,25 @@ class Film(models.Model):
     countries = models.CharField(max_length=2000)
     production = models.CharField(max_length=2000)
 
-   
 
-class Movies(models.Model):
+
+class InfoUser(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    id = models.IntegerField(primary_key=True)
+    countLike = models.IntegerField(default=0)
+    countComment = models.IntegerField(default=0)
+    countWishlist = models.IntegerField(default=0)
+    avatar = models.CharField(max_length=2000, default="null")
+
+    def get_full_name(self):
+        return self.firstName + " " + self.lastName
+    
+    def __str__(self):
+        return self.user.username
+
+
+
+class Movie(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=2000)
     img = models.CharField(max_length=2000)
