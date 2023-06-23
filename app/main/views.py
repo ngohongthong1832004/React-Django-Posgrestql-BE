@@ -42,6 +42,21 @@ class CustomPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+def CustomDataPagination(data, request):
+    pagination_class = CustomPagination()
+    paginated_items = pagination_class.paginate_queryset(data, request)
+    rs = {
+        "data" : paginated_items,
+        "pagination" : {
+            "total" : len(data),
+            "max_page" : pagination_class.page.paginator.num_pages,
+            "current_page" : pagination_class.page.number,
+            "next_page" : pagination_class.get_next_link(),
+            "previous_page" : pagination_class.get_previous_link(),
+        }
+    }
+    return rs
+
 
 
 class LoginView(FormView) :
@@ -202,26 +217,6 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
 
-class Command(BaseCommand):
-    help = 'Create a superuser and perform custom actions'
-
-    def handle(self, *args, **options):
-        User = get_user_model()
-        username = input('Username: ')
-        email = input('Email: ')
-        password = input('Password: ')
-
-        # Create the superuser
-        user = User.objects.create_superuser(
-            username=username,
-            email=email,
-            password=password
-        )
-        print("================================hello===============================================")
-        # Perform your custom actions here
-        # For example, send an email notification
-
-        self.stdout.write(self.style.SUCCESS('Superuser created successfully. :)))'))
 
 
 # API RESTFULL
@@ -309,12 +304,19 @@ class GetAllUser(APIView):
     def get(self, request):
         users = User.objects.all()
         serializer = UserSerializer(users, many=True)
-        return Response({'users': serializer.data})
+        return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
 
-    # def get(self, request):
-    #     paginator = CustomPagination()
-    #     paginated_items = paginator.paginate_queryset(self.serializers.data, request)
-    #     return Response(, status=status.HTTP_200_OK)
+        
+class SearchUser(APIView):
+    permission_classes = [IsAdminUser]  # Apply the permission class
+    queryset = User.objects.all()  # Set the 'queryset' attribute to specify the queryset for the view☻
+
+    def post(self, request):
+        last_name = request.data.get('last_name')
+        users = self.get_queryset().filter(last_name__icontains=last_name)
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
 
 class LogoutView(APIView):
