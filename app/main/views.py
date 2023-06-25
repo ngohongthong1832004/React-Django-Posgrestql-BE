@@ -335,6 +335,15 @@ class DeleteUser(APIView):
         user.delete()
         return Response({'message': 'Delete successful'})
 
+class UpdateUser(APIView):
+    permission_classes = [IsAdminUser]
+    def post(self, request, *args, **kwargs):
+        user = User.objects.get(id=kwargs['pk'])
+        user.is_staff = True
+        user.save()
+        return Response({'message': 'Set staff successful'})
+
+
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 

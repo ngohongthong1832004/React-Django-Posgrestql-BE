@@ -29,6 +29,7 @@ urlpatterns = [
     path("get-all-user/", GetAllUser.as_view(), name="GetAllUser"),
     path("search-user/", SearchUser.as_view(), name="SearchUser"),
     path("delete-user/<int:pk>", DeleteUser.as_view(), name="DeleteUser"),
+    path("update-user/<int:pk>", UpdateUser.as_view(), name="UpdateUser"),
 
 
 
