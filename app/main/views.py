@@ -11,6 +11,7 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.views.generic.edit import FormView
+from django.db.models import Q
 
 from rest_framework import generics
 from rest_framework.response import Response
@@ -308,16 +309,31 @@ class GetAllUser(APIView):
 
         
 class SearchUser(APIView):
-    permission_classes = [IsAdminUser]  # Apply the permission class
-    queryset = User.objects.all()  # Set the 'queryset' attribute to specify the queryset for the view☻
+    permission_classes = [IsAdminUser]
+    queryset = User.objects.all()
 
     def post(self, request):
-        last_name = request.data.get('last_name')
-        users = self.get_queryset().filter(last_name__icontains=last_name)
+        search_value = request.data.get('searchValue')
+        if " " in search_value:
+            search_value = search_value.split(" ")
+            users = self.queryset.filter(
+                Q(first_name__startswith=search_value[0]) &
+                Q(last_name__icontains=search_value[1])
+        )
+        else:
+            users = self.queryset.filter(
+                Q(first_name__startswith=search_value) |
+                Q(last_name__icontains=search_value)
+            )
         serializer = UserSerializer(users, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
     
-
+class DeleteUser(APIView):
+    permission_classes = [IsAdminUser]
+    def post(self, request, *args, **kwargs):
+        user = User.objects.get(id=kwargs['pk'])
+        user.delete()
+        return Response({'message': 'Delete successful'})
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]

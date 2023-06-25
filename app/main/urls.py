@@ -20,12 +20,15 @@ urlpatterns = [
 
 
     # path('api-token-auth/', views.obtain_auth_token),
+
     path('register/', UserRegistrationView.as_view(), name='user-registration'),
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
+
     path("get-user-info/", GetUserInformation.as_view(), name="GetUserInfo"),
     path("get-all-user/", GetAllUser.as_view(), name="GetAllUser"),
     path("search-user/", SearchUser.as_view(), name="SearchUser"),
+    path("delete-user/<int:pk>", DeleteUser.as_view(), name="DeleteUser"),
 
 
 
