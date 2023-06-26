@@ -238,6 +238,9 @@ class GetAllData(APIView):
         return Response(paginated_items, status=status.HTTP_200_OK)
 
 
+# ======================================================================================================
+# ======================================================================================================
+# Register
 
 
 class UserRegistrationView(APIView):
@@ -266,7 +269,27 @@ class LoginView(ObtainAuthToken):
             'lastName' : user.last_name,
             "isSuperuser" : user.is_superuser,
         })
+    
 
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        Token.objects.filter(user=user).delete()
+        return Response({'message': 'Logout successful'})
+
+
+# ======================================================================================================
+# ======================================================================================================
+# End Register
+
+
+
+
+# ======================================================================================================
+# ======================================================================================================
+# Users
 class GetUserInformation(APIView):
     permission_classes = [IsAuthenticated]
     model = InfoUser
@@ -282,22 +305,6 @@ class GetUserInformation(APIView):
             "infoUser": serializer.data,
             "fullname": user.first_name + " " + user.last_name,
         })
-
-class UpdateUserInformation(APIView):
-    permission_classes = [IsAuthenticated]
-    model = User
-    def post(self, request):
-        user = request.user
-        info_user = InfoUser.objects.get(user=user)
-        serializer = InfoUserSerializer(info_user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                "firstname": user.first_name,
-                "lastname": user.last_name,
-                "fullname": user.first_name + " " + user.last_name,
-            })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GetAllUser(APIView):
     permission_classes = [IsAdminUser]
@@ -342,14 +349,31 @@ class UpdateUser(APIView):
         user.is_staff = True
         user.save()
         return Response({'message': 'Set staff successful'})
-
-
-class LogoutView(APIView):
+    
+class UpdateUserInfo(APIView):
     permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        user  = request.user
+        user.first_name = request.data.get('first_name')
+        user.last_name = request.data.get('last_name')
+        user.save()
+        return Response({
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+        })
+class UpdateUserAvatar(APIView) :
+    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        user = InfoUser.objects.get(user=request.user)
+        print(request.data.get('avatar'))
+        user.avatar = request.data.get('avatar')
+        user.save()
+        return Response({
+            "avatar": user.avatar,
+        })
 
-    def post(self, request):
-        user = request.user
-        Token.objects.filter(user=user).delete()
-        return Response({'message': 'Logout successful'})
+# ======================================================================================================
+# ======================================================================================================
+# End Users
     
 

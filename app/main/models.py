@@ -25,7 +25,8 @@ class InfoUser(models.Model):
     countLike = models.IntegerField(default=0)
     countComment = models.IntegerField(default=0)
     countWishlist = models.IntegerField(default=0)
-    avatar = models.CharField(max_length=2000, default="null")
+    avatar = models.ImageField(upload_to='images/', default='null')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def get_full_name(self):
         return self.firstName + " " + self.lastName

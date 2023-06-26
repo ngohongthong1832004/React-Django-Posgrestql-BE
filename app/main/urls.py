@@ -30,6 +30,8 @@ urlpatterns = [
     path("search-user/", SearchUser.as_view(), name="SearchUser"),
     path("delete-user/<int:pk>", DeleteUser.as_view(), name="DeleteUser"),
     path("update-user/<int:pk>", UpdateUser.as_view(), name="UpdateUser"),
+    path("update-user-info/", UpdateUserInfo.as_view(), name="UpdateUserInfo"),
+    path("update-user-avatar/", UpdateUserAvatar.as_view(), name="UpdateUserAvatar"),
 
 
 
