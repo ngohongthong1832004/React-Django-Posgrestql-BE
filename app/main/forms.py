@@ -1,4 +1,5 @@
 from django import forms
+from .models import *
 
 class MyForm(forms.Form):
     name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'input', 'placeholder': 'Enter your name'}))
@@ -9,3 +10,12 @@ class MyForm(forms.Form):
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'input', 'placeholder': 'Enter username'}))
     password = forms.CharField(widget=forms.TextInput(attrs={'class': 'input', 'placeholder': 'Enter your pass'}))
+
+
+ 
+ 
+class HotelForm(forms.ModelForm):
+ 
+    class Meta:
+        model = Hotel
+        fields = ['name', 'hotel_Main_Img']

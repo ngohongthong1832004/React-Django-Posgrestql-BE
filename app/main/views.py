@@ -12,6 +12,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.views.generic.edit import FormView
 from django.db.models import Q
+from django.shortcuts import render, redirect
 
 from rest_framework import generics
 from rest_framework.response import Response
@@ -26,6 +27,9 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
+from rest_framework.parsers import MultiPartParser, FormParser
+
+
 
 
 
@@ -207,6 +211,21 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 
 
+ 
+def hotel_image_view(request):
+    
+    if request.method == 'POST':
+        form = HotelForm(request.POST, request.FILES)
+ 
+        if form.is_valid():
+            form.save()
+            return redirect('success')
+    else:
+        form = HotelForm()
+    return render(request, 'uploadImg.html', {'form': form})
+
+def success(request):
+    return HttpResponse('successfully uploaded')
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # =====================================================================================================================================
 # =====================================================================================================================================
@@ -361,16 +380,26 @@ class UpdateUserInfo(APIView):
             "first_name": user.first_name,
             "last_name": user.last_name,
         })
-class UpdateUserAvatar(APIView) :
+    
+
+class UpdateUserAvatar(APIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
     def post(self, request, *args, **kwargs):
         user = InfoUser.objects.get(user=request.user)
-        print(request.data.get('avatar'))
-        user.avatar = request.data.get('avatar')
-        user.save()
-        return Response({
-            "avatar": user.avatar,
-        })
+        avatar_file = request.FILES.get('avatar')
+        
+        if avatar_file:
+            # Save the file or perform other processing here
+            user.avatar.save(avatar_file.name, avatar_file, save=True)
+            
+            return Response({
+                "avatarURL": user.avatar.url,
+            })
+        else:
+            return Response({'error': 'No avatar file provided.'}, status=400)
+
 
 # ======================================================================================================
 # ======================================================================================================

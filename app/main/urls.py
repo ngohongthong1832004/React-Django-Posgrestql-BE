@@ -17,6 +17,9 @@ urlpatterns = [
     path('home/', views.home, name='home'),
     path("about/", MorningGreetingView.as_view()),
     path("test/", Test.as_view()),
+    
+    path('image_upload', hotel_image_view, name='image_upload'),
+    path('success', success, name='success'),
 
 
     # path('api-token-auth/', views.obtain_auth_token),
