@@ -29,7 +29,7 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.parsers import MultiPartParser, FormParser
 
-
+import socket
 
 
 
@@ -40,6 +40,7 @@ from datetime import date
 from main.serializers import *
 
 from .forms import *
+
 
 # CUSTOM pagination
 class CustomPagination(PageNumberPagination):
@@ -386,16 +387,26 @@ class UpdateUserAvatar(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
+
+
     def post(self, request, *args, **kwargs):
+        fqdn = socket.getfqdn()
+        ip_address = socket.gethostbyname(fqdn)
+        domain = request.META.get('HTTP_HOST')
+
+
         user = InfoUser.objects.get(user=request.user)
         avatar_file = request.FILES.get('avatar')
-        
+
+        print("ip_address: ", ip_address)
+        print("domain: ", domain)
+
         if avatar_file:
             # Save the file or perform other processing here
             user.avatar.save(avatar_file.name, avatar_file, save=True)
             
             return Response({
-                "avatarURL": user.avatar.url,
+                "avatarURL": domain + user.avatar.url,
             })
         else:
             return Response({'error': 'No avatar file provided.'}, status=400)
