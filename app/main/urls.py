@@ -43,15 +43,33 @@ urlpatterns = [
     path("update-user/<int:pk>", UpdateUser.as_view(), name="UpdateUser"),
     path("update-user-info/", UpdateUserInfo.as_view(), name="UpdateUserInfo"),
     path("update-user-avatar/", UpdateUserAvatar.as_view(), name="UpdateUserAvatar"),
-    # Movie
-    path("get-all-movie/", GetAllMovie.as_view(), name="GetAllMovie"),
-    path("get-movie/<int:pk>", GetOneMovie.as_view(), name="GetMovie"),
-    path("search-movie/", SearchMovie.as_view(), name="SearchMovie"),
+    # Movie for staff
     path("delete-movie/<int:pk>", DeleteMovie.as_view(), name="DeleteMovie"),
     path("update-movie/<int:pk>", UpdateMovie.as_view(), name="UpdateMovie"),
     path("add-movie/", AddMovie.as_view(), name="AddMovie"),
-    
-    
+    # Movie for user
+    path("get-all-movie/", GetAllMovie.as_view(), name="GetAllMovie"),
+    path("get-movie/<int:pk>", GetOneMovie.as_view(), name="GetMovie"),
+    path("search-movie/", SearchMovie.as_view(), name="SearchMovie"),
+    path("search-movie-with-genre/", SearchMovieWithGenre.as_view(), name="SearchMovieWithGenre"),
+    path("search-movie-with-cast/", SearchMovieWithCast.as_view(), name="SearchMovieWithActor"),
+    path("search-movie-with-country/", SearchMovieWithCountry.as_view(), name="SearchMovieWithCountry"),
+    path("search-movie-with-description/", SearchMovieWithDescription.as_view(), name="SearchMovieWithDescription"),   
+    path("search-movie-with-chat/", SearchMovieWithChat.as_view(), name="SearchMovieWithChat"), 
+    path("get-random-movie/", GetRandomMovie.as_view(), name="GetRandomMovie"),
+   
+    # path("get-wishlist-like/", GetWishlistLike.as_view(), name="GetMovieWishlistLike"),
+    # path("get-wishlist-like-id/", GetWishlistLikeId.as_view(), name="GetMovieWishlistLikeId"),
+    # path("get-wishlist-follow/", GetWishlistFollow.as_view(), name="GetMovieWishlistFollow"),
+    # path("get-wishlist-follow-id/", GetWishlistFollowId.as_view(), name="GetMovieWishlistFollowId"),
+    # path("like-movie/", LikeMovie.as_view(), name="LikeMovie"),
+    # path("follow-movie/", FollowMovie.as_view(), name="FollowMovie"),
 
+    path("toggle-wishlist-like/", ToggleWishlistLike.as_view(), name="ToggleWishlistLike"),
+    path("toggle-wishlist-follow/", ToggleWishlistFollow.as_view(), name="ToggleWishlistFollow"),
+    path("get-all-id-movie-wishlist-like/", GetAllIdMovieWishlistLike.as_view(), name="GetAllIdMovieWishlistLike"),
+    path("get-all-id-movie-wishlist-follow/", GetAllIdMovieWishlistFollow.as_view(), name="GetAllIdMovieWishlistFollow"),
+    path("get-movie-wishlist-like/", GetMovieWishlistLike.as_view(), name="GetMovieWishlistLike"),
+    path("get-movie-wishlist-follow/", GetMovieWishlistFollow.as_view(), name="GetMovieWishlistFollow"),
 
 ]

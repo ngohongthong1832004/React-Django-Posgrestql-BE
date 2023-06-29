@@ -60,6 +60,21 @@ class MovieSerializer(serializers.ModelSerializer):
         chat_box = ChatBox.objects.create(movies=movie, totalChatItem=0)
         return movie
 
+class WishlistLikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WishlistLike
+        fields = ("__all__")
+    def create(self, validated_data):
+        return super().create(validated_data)
+
+class WishlistFollowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WishlistFollow
+        fields = ("__all__")
+    def create(self, validated_data):
+        return super().create(validated_data)
+
+
 class ChatBoxSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatBox

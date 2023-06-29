@@ -418,6 +418,187 @@ class UpdateUserAvatar(APIView):
 # ======================================================================================================
 # Movies
 
+class ToggleWishlistLike(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        user = request.user
+        idMovie = request.data.get('movieId')
+        movie = Movie.objects.get(id=idMovie)
+        wishlist = WishlistLike.objects.filter(user=user, movie=movie)
+        if wishlist:
+            wishlist.delete()
+            movie.like -= 1
+            movie.save()
+            return Response({'message': 'Delete wishlist like successful'})
+        else:
+            WishlistLike.objects.create(user=user, movie=movie)
+            movie.like += 1
+            movie.save()
+            print(movie.like)
+            return Response({'message': 'Add wishlist like successful'})
+class ToggleWishlistFollow(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        user = request.user
+        idMovie = request.data.get('movieId')
+        movie = Movie.objects.get(id=idMovie)
+        wishlist = WishlistFollow.objects.filter(user=user, movie=movie)
+        if wishlist:
+            wishlist.delete()
+            return Response({'message': 'Delete wishlist follow successful'})
+        else:
+            WishlistFollow.objects.create(user=user, movie=movie)
+            return Response({'message': 'Add wishlist follow successful'})
+        
+
+class GetMovieWishlistLike(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        wishlist = WishlistLike.objects.filter(user=user)
+        movies = []
+        for item in wishlist:
+            movie = item.movie
+            movies.append(movie)
+        
+        serializer = MovieSerializer(movies, many=True)
+        return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
+class GetMovieWishlistFollow(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        wishlist = WishlistFollow.objects.filter(user=user)
+        movies = []
+        for item in wishlist:
+            movie = item.movie
+            movies.append(movie)
+        
+        serializer = MovieSerializer(movies, many=True)
+        return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
+
+class GetAllIdMovieWishlistLike(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        wishlist = WishlistLike.objects.filter(user=user)
+        movies = []
+        for item in wishlist:
+            movie = item.movie
+            movies.append(movie)
+        
+        serializer = MovieSerializer(movies, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GetAllIdMovieWishlistFollow(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        wishlist = WishlistFollow.objects.filter(user=user)
+        movies = []
+        for item in wishlist:
+            movie = item.movie
+            movies.append(movie)
+        
+        serializer = MovieSerializer(movies, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+# class GetWishlistLike(APIView):
+#     permission_classes = [IsAuthenticated]
+#     def post(self, request):
+#         user = request.user
+#         idMovie = request.data.get('movieId')
+#         movie = Movie.objects.get(id=idMovie)
+#         wishlists = WishlistLike.objects.filter(user=user, movie=movie)
+#         movies = []
+#         for wishlist in wishlists:
+#             movie = wishlist.movie
+#             movies.append(movie)
+        
+#         serializer = MovieSerializer(movies, many=True)
+#         return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
+
+# class GetWishlistLikeId(APIView):
+#     permission_classes = [IsAuthenticated]
+#     def post(self, request):
+#         user = request.user
+#         idMovie = request.data.get('movieId')
+#         movie = Movie.objects.get(id=idMovie)
+#         wishlists = WishlistLike.objects.filter(user=user, movie=movie)
+#         movies = []
+#         for wishlist in wishlists:
+#             movie = wishlist.movie
+#             movies.append(movie)
+        
+#         serializer = MovieSerializer(movies, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
+# class GetWishlistFollow(APIView):
+#     permission_classes = [IsAuthenticated]
+#     def post(self, request):
+#         user = request.user
+#         idMovie = request.data.get('movieId')
+#         movie = Movie.objects.get(id=idMovie)
+#         wishlists = WishlistFollow.objects.filter(user=user, movie = movie)
+#         movies = []
+#         for wishlist in wishlists:
+#             movie = wishlist.movie
+#             movies.append(movie)
+        
+#         serializer = MovieSerializer(movies, many=True)
+#         return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
+
+# class GetWishlistFollowId(APIView):
+#     permission_classes = [IsAuthenticated]
+#     def post(self, request):
+#         user = request.user
+#         idMovie = request.data.get('movieId')
+#         movie = Movie.objects.get(id=idMovie)
+#         wishlists = WishlistFollow.objects.filter(user=user, movie = movie)
+#         movies = []
+#         for wishlist in wishlists:
+#             movie = wishlist.movie
+#             movies.append(movie)
+        
+#         serializer = MovieSerializer(movies, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
+# class LikeMovie(APIView):
+#     permission_classes = [IsAuthenticated]
+#     def post(self, request):
+#         user = request.user
+#         idMovie = request.data.get('movieId')
+#         wishlist, created = WishlistLike.objects.get_or_create(user=user, idMovie=idMovie)
+        
+#         if created:
+#             return Response({'message': 'Like movie successful'})
+#         else:
+#             if wishlist.isLikeOrFollow:
+#                 wishlist.delete()
+#                 return Response({'message': 'Unlike movie successful'})
+#             else:
+#                 wishlist.isLikeOrFollow = True
+#                 wishlist.save()
+#                 return Response({'message': 'Like movie successful'})
+
+# class FollowMovie(APIView):
+#     permission_classes = [IsAuthenticated]
+#     def post(self, request):
+#         user = request.user
+#         idMovie = request.data.get('movieId')
+#         wishlist, created = WishlistFollow.objects.get_or_create(user=user, idMovie=idMovie)
+
+#         if created:
+#             return Response({'message': 'Follow movie successful'})
+#         else:
+#             if not wishlist.isLikeOrFollow:
+#                 wishlist.delete()
+#                 return Response({'message': 'Unfollow movie successful'})
+#             else:
+#                 wishlist.isLikeOrFollow = False
+#                 wishlist.save()
+#                 return Response({'message': 'Follow movie successful'})
+
+
 class GetAllMovie(APIView):
     permission_classes = [AllowAny]
     def get(self, request, *args, **kwargs):
@@ -432,7 +613,14 @@ class GetOneMovie(APIView):
         movie = Movie.objects.get(id=kwargs['pk'])
         serializer = MovieSerializer(movie)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
+class GetRandomMovie(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, *args, **kwargs):
+        movies = Movie.objects.all().order_by('?')[:5]
+        serializer = MovieSerializer(movies, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class SearchMovie(APIView):
     permission_classes = [AllowAny]
     queryset = Movie.objects.all()
@@ -446,6 +634,67 @@ class SearchMovie(APIView):
         serializer = MovieSerializer(movies, many=True)
         return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
 
+class SearchMovieWithGenre(APIView):
+    permission_classes = [AllowAny]
+    queryset = Movie.objects.all()
+
+    def post(self, request) : 
+        genre = request.data.get('searchValue')
+        movies = self.queryset.filter(
+            Q(genres__icontains=genre)
+        )
+        serializer = MovieSerializer(movies, many=True)
+        return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
+
+
+class SearchMovieWithCast(APIView):
+    permission_classes = [AllowAny]
+    queryset = Movie.objects.all()
+
+    def post(self, request) : 
+        cast = request.data.get('searchValue')
+        movies = self.queryset.filter(
+            Q(casts__icontains=cast)
+        )
+        serializer = MovieSerializer(movies, many=True)
+        return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
+
+class SearchMovieWithChat(APIView):
+    permission_classes = [AllowAny]
+    queryset = Movie.objects.all()
+
+    def post(self, request) : 
+        chat = request.data.get('searchValue')
+        movies = self.queryset.filter(
+            Q(chats__icontains=chat)
+        )
+        serializer = MovieSerializer(movies, many=True)
+        return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
+
+class SearchMovieWithCountry(APIView):
+    permission_classes = [AllowAny]
+    queryset = Movie.objects.all()
+
+    def post(self, request) : 
+        country = request.data.get('searchValue')
+        movies = self.queryset.filter(
+            Q(countries__icontains=country)
+        )
+        serializer = MovieSerializer(movies, many=True)
+        return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
+
+class SearchMovieWithDescription(APIView):
+    permission_classes = [AllowAny]
+    queryset = Movie.objects.all()
+    def post(self,request) :
+        description = request.data.get('searchValue')
+        movies = self.queryset.filter(
+            Q(desc__icontains=description)
+        )
+        serializer = MovieSerializer(movies, many=True)
+        return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
+
+
 class AddMovie(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
@@ -458,6 +707,7 @@ class AddMovie(APIView):
             serializer.save()
             return Response({'message': 'Add movie successful'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class UpdateMovie(APIView):
     permission_classes = [IsAuthenticated]

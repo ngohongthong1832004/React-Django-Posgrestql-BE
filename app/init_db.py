@@ -11,6 +11,7 @@ from main.models import Movie
 from main.models import ChatBox
 
 
+
 import json
 
 with open("./main/model/movie-full-option.json", "r", encoding="utf-8") as f:
@@ -40,6 +41,8 @@ with open("./main/model/movie-full-option.json", "r", encoding="utf-8") as f:
 
 from main.models import User
 from main.models import InfoUser
+from main.models import WishlistLike
+from main.models import WishlistFollow
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -50,10 +53,21 @@ superuser = User.objects.create_superuser(username="admin", email="admin@gmail.c
 infoAdmin = InfoUser(
     user = superuser,
     id = 1,
-    countLike = 66,
-    countComment = 88,
-    countWishlist = 99,
+    countLike = 0,
+    countComment = 0,
+    countWishlist = 0,
 )
 infoAdmin.save() 
+# wishlistLike = WishlistLike(
+#     user = superuser,
+#     id = 1,
+# )
+# wishlistLike.save()
+
+# wishlistFollow = WishlistFollow(
+#     user = superuser,
+#     id = 1,
+# )
+# wishlistFollow.save()
 
 print("Superuser created successfully.")
