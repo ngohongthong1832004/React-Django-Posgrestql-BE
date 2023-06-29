@@ -6,4 +6,7 @@ from .models import *
 
 admin.site.register(InfoUser)
 admin.site.register(Movie)
+admin.site.register(ChatBox)
+admin.site.register(ChatItem)
+admin.site.register(ChatReply)
 # admin.site.register(Hotel)

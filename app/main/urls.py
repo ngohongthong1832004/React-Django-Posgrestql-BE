@@ -17,17 +17,25 @@ urlpatterns = [
     path('home/', views.home, name='home'),
     path("about/", MorningGreetingView.as_view()),
     path("test/", Test.as_view()),
-    
+    # path('api-token-auth/', views.obtain_auth_token),
+
+    path('getone/', GetOneData.as_view(), name="GetOneData"),
+    path('getall/', GetAllData.as_view(), name="GetAllData"),
+
+    # test upload img with SSR
     path('image_upload', hotel_image_view, name='image_upload'),
     path('success', success, name='success'),
 
 
-    # path('api-token-auth/', views.obtain_auth_token),
+    # =====================================================================================
+    # =====================================================================================
+    # =====================================================================================
 
+    # REGISTER
     path('register/', UserRegistrationView.as_view(), name='user-registration'),
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
-
+    # USER
     path("get-user-info/", GetUserInformation.as_view(), name="GetUserInfo"),
     path("get-all-user/", GetAllUser.as_view(), name="GetAllUser"),
     path("search-user/", SearchUser.as_view(), name="SearchUser"),
@@ -35,11 +43,15 @@ urlpatterns = [
     path("update-user/<int:pk>", UpdateUser.as_view(), name="UpdateUser"),
     path("update-user-info/", UpdateUserInfo.as_view(), name="UpdateUserInfo"),
     path("update-user-avatar/", UpdateUserAvatar.as_view(), name="UpdateUserAvatar"),
-
-
-
-    path('getone/', GetOneData.as_view(), name="GetOneData"),
-    path('getall/', GetAllData.as_view(), name="GetAllData"),
+    # Movie
+    path("get-all-movie/", GetAllMovie.as_view(), name="GetAllMovie"),
+    path("get-movie/<int:pk>", GetOneMovie.as_view(), name="GetMovie"),
+    path("search-movie/", SearchMovie.as_view(), name="SearchMovie"),
+    path("delete-movie/<int:pk>", DeleteMovie.as_view(), name="DeleteMovie"),
+    path("update-movie/<int:pk>", UpdateMovie.as_view(), name="UpdateMovie"),
+    path("add-movie/", AddMovie.as_view(), name="AddMovie"),
+    
+    
 
 
 ]

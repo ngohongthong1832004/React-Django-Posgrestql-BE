@@ -13,6 +13,8 @@ from django.dispatch import receiver
 from django.views.generic.edit import FormView
 from django.db.models import Q
 from django.shortcuts import render, redirect
+from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
 
 from rest_framework import generics
 from rest_framework.response import Response
@@ -209,10 +211,6 @@ class ExampleView(APIView):
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
-
-
-
- 
 def hotel_image_view(request):
     
     if request.method == 'POST':
@@ -224,24 +222,8 @@ def hotel_image_view(request):
     else:
         form = HotelForm()
     return render(request, 'uploadImg.html', {'form': form})
-
 def success(request):
     return HttpResponse('successfully uploaded')
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# =====================================================================================================================================
-# =====================================================================================================================================
-# =====================================================================================================================================
-# =====================================================================================================================================
-
-# handle creae super user
-from django.contrib.auth import get_user_model
-from django.core.management.base import BaseCommand
-
-
-
-
-# API RESTFULL
-
 class GetOneData(APIView):
     permission_classes = [IsAuthenticated]
   
@@ -251,11 +233,26 @@ class GetOneData(APIView):
 class GetAllData(APIView):
     permission_classes = [IsAuthenticated]
     model = Movie
-    serializer = Movieerializer(model.objects.all(), many=True)
+    serializer = MovieSerializer(model.objects.all(), many=True)
     def get(self, request, *args, **kwargs):
         paginator = CustomPagination()
         paginated_items = paginator.paginate_queryset(self.serializer.data, request)
         return Response(paginated_items, status=status.HTTP_200_OK)
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# =====================================================================================================================================
+# =====================================================================================================================================
+# =====================================================================================================================================
+# =====================================================================================================================================
+
+# handle creae super user
+
+
+
+
+
+# API RESTFULL
+
 
 
 # ======================================================================================================
@@ -417,3 +414,72 @@ class UpdateUserAvatar(APIView):
 # End Users
     
 
+# ======================================================================================================
+# ======================================================================================================
+# Movies
+
+class GetAllMovie(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, *args, **kwargs):
+        serializer = MovieSerializer(Movie.objects.all(), many=True)
+        return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
+
+class GetOneMovie(APIView):
+    permission_classes = [AllowAny]
+    model = Movie
+    serializer = MovieSerializer(model.objects.all(), many=True)
+    def get(self, request, *args, **kwargs):
+        movie = Movie.objects.get(id=kwargs['pk'])
+        serializer = MovieSerializer(movie)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class SearchMovie(APIView):
+    permission_classes = [AllowAny]
+    queryset = Movie.objects.all()
+
+    def post(self, request):
+        search_value = request.data.get('searchValue')
+        movies = self.queryset.filter(
+            Q(name__startswith=search_value) |
+            Q(subName__startswith=search_value)
+        )
+        serializer = MovieSerializer(movies, many=True)
+        return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
+
+class AddMovie(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        user = request.user
+        if user.is_staff == False:
+            return Response({'message': 'You do not have permission to do this action'})
+        
+        serializer = MovieSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Add movie successful'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UpdateMovie(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        user = request.user
+
+        if user.is_staff == False:
+            return Response({'message': 'You do not have permission to do this action'})
+        movie = Movie.objects.get(id=kwargs['pk'])
+        serializer = MovieSerializer(movie, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Update movie successful'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DeleteMovie(APIView):
+    permission_classes = [IsAdminUser]
+    def post(self, request, *args, **kwargs):
+        movie = Movie.objects.get(id=kwargs['pk'])
+        movie.delete()
+        return Response({'message': 'Delete movie successful'})
+
+# ======================================================================================================
+# ======================================================================================================
+# End Movies

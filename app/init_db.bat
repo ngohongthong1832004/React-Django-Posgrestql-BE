@@ -13,4 +13,4 @@ rmdir /s /q main\__pycache__
 rmdir /s /q Vis4T_main\__pycache__
 
 
-call python manage.py createsuperuser
+@REM call python manage.py runserver
