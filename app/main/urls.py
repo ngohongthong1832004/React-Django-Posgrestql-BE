@@ -77,4 +77,11 @@ urlpatterns = [
     path("get-chat-item/", GetChatItem.as_view(), name="GetChatItem"),
     path("add-chat-reply/", AddChatReply.as_view(), name="AddChatReply"),
 
+    path("like-chat-item/", LikeChatItem.as_view(), name="LikeChatItem"),
+    path("like-chat-reply/", LikeChatReply.as_view(), name="LikeChatReply"),
+    path("delete-chat-item/<int:pk>", DeleteChatItem.as_view(), name="DeleteChatItem"),
+    path("delete-chat-reply/<int:pk>", DeleteChatReply.as_view(), name="DeleteChatReply"),
+    path("dislike-chat-item/", DislikeChatItem.as_view(), name="DislikeChatItem"),
+    path("dislike-chat-reply/", DisLikeChatReply.as_view(), name="DislikeChatReply"),
+
 ]

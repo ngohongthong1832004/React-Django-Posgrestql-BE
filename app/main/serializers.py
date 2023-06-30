@@ -88,6 +88,18 @@ class ChatItemSerializer(serializers.ModelSerializer):
         fields = ("__all__")
     def create(self, validated_data):
         return super().create(validated_data)
+class LikeChatItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LikeChatItem
+        fields = ("__all__")
+    def create(self, validated_data):
+        return super().create(validated_data)
+class DisLikeChatItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DisLikeChatItem
+        fields = ("__all__")
+    def create(self, validated_data):
+        return super().create(validated_data)
 
 class ChatReplySerializer(serializers.ModelSerializer):
     class Meta:
