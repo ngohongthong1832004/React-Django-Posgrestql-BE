@@ -11,10 +11,11 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.views.generic.edit import FormView
-from django.db.models import Q
+from django.db.models import Q, F
 from django.shortcuts import render, redirect
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
+from django.core.management import call_command
 
 from rest_framework import generics
 from rest_framework.response import Response
@@ -52,6 +53,26 @@ class CustomPagination(PageNumberPagination):
 
 def CustomDataPagination(data, request):
     pagination_class = CustomPagination()
+    paginated_items = pagination_class.paginate_queryset(data, request)
+    rs = {
+        "data" : paginated_items,
+        "pagination" : {
+            "total" : len(data),
+            "max_page" : pagination_class.page.paginator.num_pages,
+            "current_page" : pagination_class.page.number,
+            "next_page" : pagination_class.get_next_link(),
+            "previous_page" : pagination_class.get_previous_link(),
+        }
+    }
+    return rs
+
+class CustomPaginationChat(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+def CustomDataPaginationChat(data, request):
+    pagination_class = CustomPaginationChat()
     paginated_items = pagination_class.paginate_queryset(data, request)
     rs = {
         "data" : paginated_items,
@@ -429,11 +450,13 @@ class ToggleWishlistLike(APIView):
             wishlist.delete()
             movie.like -= 1
             movie.save()
+            InfoUser.objects.filter(user=user).update(countLike=F('countLike') - 1)
             return Response({'message': 'Delete wishlist like successful'})
         else:
             WishlistLike.objects.create(user=user, movie=movie)
             movie.like += 1
             movie.save()
+            InfoUser.objects.filter(user=user).update(countLike=F('countLike') + 1)
             print(movie.like)
             return Response({'message': 'Add wishlist like successful'})
 class ToggleWishlistFollow(APIView):
@@ -445,9 +468,11 @@ class ToggleWishlistFollow(APIView):
         wishlist = WishlistFollow.objects.filter(user=user, movie=movie)
         if wishlist:
             wishlist.delete()
+            InfoUser.objects.filter(user=user).update(countWishlist=F('countWishlist') - 1)
             return Response({'message': 'Delete wishlist follow successful'})
         else:
             WishlistFollow.objects.create(user=user, movie=movie)
+            InfoUser.objects.filter(user=user).update(countWishlist=F('countWishlist') + 1)
             return Response({'message': 'Add wishlist follow successful'})
         
 
@@ -733,3 +758,99 @@ class DeleteMovie(APIView):
 # ======================================================================================================
 # ======================================================================================================
 # End Movies
+
+
+
+# ======================================================================================================
+# ======================================================================================================
+# Chat
+
+class AddChatItem(APIView) :
+    permission_classes = [IsAuthenticated]
+    def post(self, request) :
+        print(request.data)
+        user = request.user
+        movie = Movie.objects.get(id=request.data.get('movieId'))
+        chat_box = ChatBox.objects.get(movies=movie)
+        chat_item = ChatItem.objects.create(user=user, chatbox=chat_box, content=request.data.get('content'))
+        chat_box.totalChatItem += 1
+        chat_box.save()
+        serializer = ChatItemSerializer(chat_item)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+class GetChatItem(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        checkDelete = request.user 
+        result = []
+        idMovie = request.data.get('movieId')
+        movie = Movie.objects.get(id=idMovie)
+        chat_box = ChatBox.objects.get(movies=movie)
+        chat_items = ChatItem.objects.filter(chatbox=chat_box).order_by('-id')
+
+        for chatItem in chat_items:
+            user_info = InfoUser.objects.get(user=chatItem.user)
+            chat_replies = ChatReply.objects.filter(chatitem=chatItem)
+            # chat_replies_serializer = ChatReplySerializer(chat_replies, many=True)
+            full_name = (
+                chatItem.user.first_name + " " + chatItem.user.last_name
+            ) or chatItem.user.username.split("@")[0]
+            item = {
+                "data": {
+                    "user": {
+                        "id": chatItem.user.id,
+                        "username": full_name,
+                        "avatar": user_info.avatar.url if user_info.avatar else None,
+                        "isStaff" : chatItem.user.is_staff,
+                        "isSuperuser" : chatItem.user.is_superuser,
+                    },
+                    "chatItem": {
+                        "id": chatItem.id,
+                        "content": chatItem.content,
+                        "created_at": chatItem.created_at.strftime("%d/%m/%Y %H:%M"),
+                        "isDelete": checkDelete == chatItem.user,
+                        "like" : chatItem.like,
+                    },
+                    "chatReply": {
+                        "data": [],
+                    }
+                }
+            }
+            for chatReply in chat_replies[::-1]:
+                user_info = InfoUser.objects.get(user=chatReply.user)
+                full_name = (
+                    chatReply.user.first_name + " " + chatReply.user.last_name
+                ) or chatReply.user.username.split("@")[0]
+                chatReplyObj = {
+                    "id": chatReply.id,
+                    "user": {
+                        "id": chatReply.user.id,
+                        "username": full_name,
+                        "avatar": user_info.avatar.url if user_info.avatar else None,
+                        "isStaff" : chatReply.user.is_staff,
+                        "isSuperuser" : chatReply.user.is_superuser,
+                    },
+                    "like" : chatReply.like,
+                    "content": chatReply.content,
+                    "created_at": chatReply.created_at.strftime("%d/%m/%Y %H:%M"),
+                    "isDelete": checkDelete == chatReply.user,
+                }
+                item["data"]["chatReply"]["data"].append(chatReplyObj)
+            result.append(item)
+
+        return Response(CustomDataPaginationChat(result, request), status=status.HTTP_200_OK)
+
+
+class AddChatReply(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request) :
+        user = request.user
+        chat_item = ChatItem.objects.get(id=request.data.get('chatItemId'))
+        chat_reply = ChatReply.objects.create(user=user, chatitem=chat_item, content=request.data.get('content'))
+        # get boc cha
+        serializer = ChatReplySerializer(chat_reply)
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -72,4 +72,9 @@ urlpatterns = [
     path("get-movie-wishlist-like/", GetMovieWishlistLike.as_view(), name="GetMovieWishlistLike"),
     path("get-movie-wishlist-follow/", GetMovieWishlistFollow.as_view(), name="GetMovieWishlistFollow"),
 
+    # Chat
+    path("add-chat-item/", AddChatItem.as_view(), name="AddChatItem"),
+    path("get-chat-item/", GetChatItem.as_view(), name="GetChatItem"),
+    path("add-chat-reply/", AddChatReply.as_view(), name="AddChatReply"),
+
 ]
