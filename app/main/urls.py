@@ -77,11 +77,15 @@ urlpatterns = [
     path("get-chat-item/", GetChatItem.as_view(), name="GetChatItem"),
     path("add-chat-reply/", AddChatReply.as_view(), name="AddChatReply"),
 
-    path("like-chat-item/", LikeChatItem.as_view(), name="LikeChatItem"),
-    path("like-chat-reply/", LikeChatReply.as_view(), name="LikeChatReply"),
+    path("like-chat-item/<int:pk>", LikeChatItemView.as_view(), name="LikeChatItem"),
+    path("like-chat-reply/<int:pk>", LikeChatReplyView.as_view(), name="LikeChatReply"),
     path("delete-chat-item/<int:pk>", DeleteChatItem.as_view(), name="DeleteChatItem"),
     path("delete-chat-reply/<int:pk>", DeleteChatReply.as_view(), name="DeleteChatReply"),
-    path("dislike-chat-item/", DislikeChatItem.as_view(), name="DislikeChatItem"),
-    path("dislike-chat-reply/", DisLikeChatReply.as_view(), name="DislikeChatReply"),
+    path("dislike-chat-item/<int:pk>", DislikeChatItemView.as_view(), name="DislikeChatItem"),
+    path("dislike-chat-reply/<int:pk>", DisLikeChatReplyView.as_view(), name="DislikeChatReply"),
+    path("get-all-id-like-chat-item/", GetAllIdLikeChatItem.as_view(), name="GetAllIdLikeChatItem"),
+    path("get-all-id-like-chat-reply/", GetAllIdLikeChatReply.as_view(), name="GetAllIdLikeChatReply"),
+    path("get-all-id-dislike-chat-item/", GetAllIdDislikeChatItem.as_view(), name="GetAllIdDislikeChatItem"),
+    path("get-all-id-dislike-chat-reply/", GetAllIdDislikeChatReply.as_view(), name="GetAllIdDislikeChatReply"),
 
 ]

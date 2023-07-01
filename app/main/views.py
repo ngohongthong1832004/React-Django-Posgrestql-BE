@@ -877,43 +877,117 @@ class DeleteChatReply(APIView) :
         else :
             return Response({'message': 'You do not have permission to do this action'})
     
-class LikeChatItem(APIView) :
+class LikeChatItemView(APIView) :
     permission_classes = [IsAuthenticated]
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         user = request.user
-        chat_item = ChatItem.objects.get(id=request.data.get('chatItemId'))
+        chat_item = ChatItem.objects.get(id=kwargs['pk'])
+        if LikeChatItem.objects.filter(user=user, chatitem=chat_item).exists():
+            LikeChatItem.objects.filter(user=user, chatitem=chat_item).delete()
+            chat_item.like -= 1
+            chat_item.save()
+            return Response({'message': 'You have liked this chat item'})
+        if DisLikeChatItem.objects.filter(user=user, chatitem=chat_item).exists():
+            DisLikeChatItem.objects.filter(user=user, chatitem=chat_item).delete()
         LikeChatItem.objects.create(user=user, chatitem=chat_item)
         chat_item.like += 1
         chat_item.save()
         return Response({'message': 'Like chat item successful'})
-    
-class LikeChatReply(APIView) :
+
+class LikeChatReplyView(APIView) :
     permission_classes = [IsAuthenticated]
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         user = request.user
-        chat_reply = ChatReply.objects.get(id=request.data.get('chatReplyId'))
+        chat_reply = ChatReply.objects.get(id=kwargs['pk'])
+        if LikeChatReply.objects.filter(user=user, chatreply=chat_reply).exists():
+            LikeChatReply.objects.filter(user=user, chatreply=chat_reply).delete()
+            chat_reply.like -= 1
+            chat_reply.save()
+            return Response({'message': 'You have liked this chat reply'})
+        if DisLikeChatReply.objects.filter(user=user, chatreply=chat_reply).exists():
+            DisLikeChatReply.objects.filter(user=user, chatreply=chat_reply).delete()
         LikeChatReply.objects.create(user=user, chatreply=chat_reply)
         chat_reply.like += 1
         chat_reply.save()
         return Response({'message': 'Like chat reply successful'})
     
-class DislikeChatItem(APIView) :
+class DislikeChatItemView(APIView) :
     permission_classes = [IsAuthenticated]
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         user = request.user
-        chat_item = ChatItem.objects.get(id=request.data.get('chatItemId'))
+        chat_item = ChatItem.objects.get(id=kwargs['pk'])
+        if DisLikeChatItem.objects.filter(user=user, chatitem=chat_item).exists():
+            DisLikeChatItem.objects.filter(user=user, chatitem=chat_item).delete()
+            return Response({'message': 'You have disliked this chat item'})
+        DisLikeChatItem.objects.create(user=user, chatitem=chat_item)
         LikeChatItem.objects.filter(user=user, chatitem=chat_item).delete()
         chat_item.like -= 1
         chat_item.save()
         return Response({'message': 'Dislike chat item successful'})
-class DisLikeChatReply(APIView):
+class DisLikeChatReplyView(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         user = request.user
-        chat_reply = ChatReply.objects.get(id=request.data.get('chatReplyId'))
+        chat_reply = ChatReply.objects.get(id=kwargs['pk'])
+        if DisLikeChatReply.objects.filter(user=user, chatreply=chat_reply).exists():
+            DisLikeChatReply.objects.filter(user=user, chatreply=chat_reply).delete()
+            return Response({'message': 'You have disliked this chat reply'})
+        DisLikeChatReply.objects.create(user=user, chatreply=chat_reply)
         LikeChatReply.objects.filter(user=user, chatreply=chat_reply).delete()
         chat_reply.like -= 1
         chat_reply.save()
         return Response({'message': 'Dislike chat reply successful'})
 
+class GetAllIdLikeChatItem(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        wishlist = LikeChatItem.objects.filter(user=user)
+        chatItems = []
+        for item in wishlist:
+            chatItem = item.chatitem
+            chatItems.append(chatItem)
+        
+        serializer = IdLikeChatItemSerializer(chatItems, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class GetAllIdLikeChatReply(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        wishlist = LikeChatReply.objects.filter(user=user)
+        chatReplies = []
+        for item in wishlist:
+            chatReply = item.chatreply
+            chatReplies.append(chatReply)
+        
+        serializer = IdLikeChatReplySerializer(chatReplies, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GetAllIdDislikeChatItem(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        wishlist = DisLikeChatItem.objects.filter(user=user)
+        chatItems = []
+        for item in wishlist:
+            chatItem = item.chatitem
+            chatItems.append(chatItem)
+        
+        serializer = IdDisLikeChatItemSerializer(chatItems, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GetAllIdDislikeChatReply(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        wishlist = DisLikeChatReply.objects.filter(user=user)
+        chatReplies = []
+        for item in wishlist:
+            chatReply = item.chatreply
+            chatReplies.append(chatReply)
+        
+        serializer = IdDisLikeChatReplySerializer(chatReplies, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
 # ======================================================================================================

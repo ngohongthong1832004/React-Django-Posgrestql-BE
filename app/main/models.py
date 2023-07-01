@@ -84,6 +84,13 @@ class ChatBox(models.Model):
 class LikeChatItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     chatitem = models.ForeignKey('ChatItem', on_delete=models.CASCADE)
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering = ['created_at']
+class LikeChatReply(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     chatreply = models.ForeignKey('ChatReply', on_delete=models.CASCADE)
     id = models.AutoField(primary_key=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -94,6 +101,14 @@ class LikeChatItem(models.Model):
 class DisLikeChatItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     chatitem = models.ForeignKey('ChatItem', on_delete=models.CASCADE)
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering = ['created_at']
+
+class DisLikeChatReply(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     chatreply = models.ForeignKey('ChatReply', on_delete=models.CASCADE)
     id = models.AutoField(primary_key=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -122,5 +137,6 @@ class ChatReply(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     class Meta:
         ordering = ['created_at']
+    
     
     
