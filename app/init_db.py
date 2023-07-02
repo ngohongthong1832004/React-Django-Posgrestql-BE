@@ -9,12 +9,12 @@ from app.wsgi import *
 
 from main.models import Movie
 from main.models import ChatBox
-
+import random
 
 
 import json
 
-with open("./main/model/movie-full-option.json", "r", encoding="utf-8") as f:
+with open("./main/dummy_data/dummy_data.json", "r", encoding="utf-8") as f:
     movies = json.load(f)
     for movie in movies:
         movie_instance = Movie.objects.create(
@@ -24,9 +24,9 @@ with open("./main/model/movie-full-option.json", "r", encoding="utf-8") as f:
             releaseDate=movie["release"] if "release" in movie else "null",
             year=movie["year"] if "year" in movie else "null",
             length=movie["length"] if "length" in movie else "null",
-            like=movie["like"] if "like" in movie else 0,
-            IMDb=movie["imdb"] if "imdb" in movie else 0,
-            star=movie["star"] if "star" in movie else 0,
+            like=movie["like"] if "like" in movie else random.randint(0, 1000),
+            IMDb=movie["imdb"] if "imdb" in movie else round(random.uniform(0.0, 9.0),1),
+            star=movie["star"] if "star" in movie else random.randint(0, 5),
             desc=movie["desc"] if "desc" in movie else "null",
             casts=", ".join(movie["casts"]) if "casts" in movie else "null",
             genres=", ".join(movie["genres"]) if "genres" in movie else "null",
@@ -41,15 +41,12 @@ with open("./main/model/movie-full-option.json", "r", encoding="utf-8") as f:
 
 from main.models import User
 from main.models import InfoUser
-from main.models import WishlistLike
-from main.models import WishlistFollow
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# Create the superuser
-superuser = User.objects.create_superuser(username="admin", email="admin@gmail.com", password="admin")
 
+superuser = User.objects.create_superuser(username="admin", email="admin@gmail.com", password="admin", first_name = "admin", last_name = "☻")
 infoAdmin = InfoUser(
     user = superuser,
     id = 1,
@@ -57,17 +54,39 @@ infoAdmin = InfoUser(
     countComment = 0,
     countWishlist = 0,
 )
-infoAdmin.save() 
-# wishlistLike = WishlistLike(
-#     user = superuser,
-#     id = 1,
-# )
-# wishlistLike.save()
-
-# wishlistFollow = WishlistFollow(
-#     user = superuser,
-#     id = 1,
-# )
-# wishlistFollow.save()
-
+infoAdmin.save()
 print("Superuser created successfully.")
+
+usersTable =  [
+    {"name": "Olivia Johnson", "email": "olivia.johnson@example.com", "password" : "123456"},
+    {"name": "Ethan Smith", "email": "ethan.smith@example.com", "password" : "123456"},
+    {"name": "Ava Davis", "email": "ava.davis@example.com", "password" : "123456"},
+    {"name": "Noah Brown", "email": "noah.brown@example.com", "password" : "123456"},
+    {"name": "Isabella Miller", "email": "isabella.miller@example.com", "password" : "123456"},
+    {"name": "Lucas Wilson", "email": "lucas.wilson@example.com", "password" : "123456"},
+    {"name": "Mia Taylor", "email": "mia.taylor@example.com", "password" : "123456"},
+    {"name": "Liam Anderson", "email": "liam.anderson@example.com", "password" : "123456"},
+    {"name": "Sophia Martinez", "email": "sophia.martinez@example.com", "password" : "123456"},
+    {"name": "Jackson Clark", "email": "jackson.clark@example.com", "password" : "123456"},
+    {"name": "Emma Thompson", "email": "emma.thompson@example.com", "password" : "123456"},
+    {"name": "Aiden Lee", "email": "aiden.lee@example.com", "password" : "123456"},
+    {"name": "Harper Harris", "email": "harper.harris@example.com", "password" : "123456"},
+    {"name": "Benjamin Robinson", "email": "benjamin.robinson@example.com", "password" : "123456"},
+    {"name": "Amelia Turner", "email": "amelia.turner@example.com", "password" : "123456"},
+    {"name": "Henry Walker", "email": "henry.walker@example.com", "password" : "123456"},
+    {"name": "Charlotte Hill", "email": "charlotte.hill@example.com", "password" : "123456"},
+    {"name": "Michael Mitchell", "email": "michael.mitchell@example.com", "password" : "123456"},
+    {"name": "Ava Young", "email": "ava.young@example.com", "password" : "123456"},
+    {"name": "James Nelson", "email": "james.nelson@example.com", "password" : "123456"},
+]
+
+for user in usersTable:
+    user = User.objects.create_user( username =user["email"], password = user["password"], email = user["email"], first_name = user["name"].split(" ")[0], last_name = user["name"].split(" ")[1])
+    infoUser = InfoUser(
+        user = user,
+        id = user.id,
+        countLike = 0,
+        countComment = 0,
+        countWishlist = 0,
+    )
+print("Users created successfully.")

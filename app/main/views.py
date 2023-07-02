@@ -351,7 +351,8 @@ class GetAllUser(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        users = User.objects.all()
+        # order by is_staff
+        users = User.objects.all().order_by("-is_staff")
         serializer = UserSerializer(users, many=True)
         return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
 
