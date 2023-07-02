@@ -768,8 +768,10 @@ class DeleteMovie(APIView):
 class AddChatItem(APIView) :
     permission_classes = [IsAuthenticated]
     def post(self, request) :
-        print(request.data)
         user = request.user
+        userInfo = InfoUser.objects.get(user=user)
+        userInfo.countComment += 1
+        userInfo.save()
         movie = Movie.objects.get(id=request.data.get('movieId'))
         chat_box = ChatBox.objects.get(movies=movie)
         chat_item = ChatItem.objects.create(user=user, chatbox=chat_box, content=request.data.get('content'))
@@ -778,8 +780,6 @@ class AddChatItem(APIView) :
         serializer = ChatItemSerializer(chat_item)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
 class GetChatItem(APIView):
     permission_classes = [AllowAny]
@@ -849,6 +849,9 @@ class AddChatReply(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request) :
         user = request.user
+        userInfo = InfoUser.objects.get(user=user)
+        userInfo.countComment += 1
+        userInfo.save()
         chat_item = ChatItem.objects.get(id=request.data.get('chatItemId'))
         chat_reply = ChatReply.objects.create(user=user, chatitem=chat_item, content=request.data.get('content'))
         # get boc cha
@@ -859,7 +862,11 @@ class DeleteChatItem(APIView) :
     permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs) :
         user = request.user
+        userInfo = InfoUser.objects.get(user=user)
         chat_item = ChatItem.objects.get(id=kwargs['pk'])
+        chatreply = ChatReply.objects.filter(chatitem=chat_item)
+        userInfo.countComment = userInfo.countComment - ( 1 + len(chatreply) ) 
+        userInfo.save()
         if user == chat_item.user :
             chat_item.delete()
             return Response({'message': 'Delete chat item successful'})
@@ -870,6 +877,9 @@ class DeleteChatReply(APIView) :
     permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs) :
         user = request.user
+        userInfo = InfoUser.objects.get(user=user)
+        userInfo.countComment -= 1
+        userInfo.save()
         chat_reply = ChatReply.objects.get(id=kwargs['pk'])
         if user == chat_reply.user :
             chat_reply.delete()
