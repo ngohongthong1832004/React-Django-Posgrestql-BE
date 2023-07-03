@@ -89,4 +89,5 @@ for user in usersTable:
         countComment = 0,
         countWishlist = 0,
     )
+    infoUser.save()
 print("Users created successfully.")
