@@ -366,12 +366,12 @@ class SearchUser(APIView):
         if " " in search_value:
             search_value = search_value.split(" ")
             users = self.queryset.filter(
-                Q(first_name__startswith=search_value[0]) &
+                Q(first_name__istartswith=search_value[0]) &
                 Q(last_name__icontains=search_value[1])
         )
         else:
             users = self.queryset.filter(
-                Q(first_name__startswith=search_value) |
+                Q(first_name__istartswith=search_value) |
                 Q(last_name__icontains=search_value)
             )
         serializer = UserSerializer(users, many=True)
@@ -657,8 +657,8 @@ class SearchMovie(APIView):
     def post(self, request):
         search_value = request.data.get('searchValue')
         movies = self.queryset.filter(
-            Q(name__startswith=search_value) |
-            Q(subName__startswith=search_value)
+            Q(name__istartswith=search_value) |
+            Q(subName__istartswith=search_value)
         )
         serializer = MovieSerializer(movies, many=True)
         return Response(CustomDataPagination(serializer.data, request), status=status.HTTP_200_OK)
