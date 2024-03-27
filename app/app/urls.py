@@ -19,9 +19,14 @@ from django.urls import path, include
 
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework_swagger.views import get_swagger_view
+# from django.conf.urls import url
+
+schema_view = get_swagger_view(title='Pastebin API')
 
 
 urlpatterns = [
     path('', include("main.urls")),
     path('admin/', admin.site.urls),
+    # url(r'^docs/', include('rest_framework_swagger.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

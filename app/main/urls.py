@@ -5,6 +5,9 @@ from .views import *
 
 
 urlpatterns = [
+    
+     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    
     path('', views.default, name='default'),
     path('api/<int:id>', FilmApiView.as_view(), name='default'),
     path('api/all', FilmApiAll.as_view(), name='FilmAll'),
